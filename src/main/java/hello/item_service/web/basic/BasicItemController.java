@@ -6,8 +6,7 @@ import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -15,6 +14,7 @@ import java.util.List;
 @RequestMapping("/basic/items")
 @RequiredArgsConstructor
 public class BasicItemController {
+
     /**
      * @Repository annotation이 붙은 ItemRepository가 주입된다.
      * 왜? BasicItemController와 ItemRepository 둘 다 spring bean으로 등록되기 때문이다.
@@ -28,6 +28,46 @@ public class BasicItemController {
         List<Item> items = itemRepository.findAll();
         model.addAttribute("items", items);
         return "basic/items";
+    }
+
+    @GetMapping("/{itemId}")
+    public String item(@PathVariable("itemId") Long itemId, Model model) {
+        Item item = itemRepository.findById(itemId);
+        model.addAttribute("item", item);
+        return "basic/item";
+    }
+
+    @GetMapping("/add")
+    public String addForm(){
+        return "basic/addForm";
+    }
+
+//    @PostMapping("/add")
+    public String addItemV1(
+            @RequestParam("itemName") String itemName,
+            @RequestParam("price") int price,
+            @RequestParam("quantity") int quantity,
+            Model model
+    ){
+        Item item = new Item();
+        item.setItemName(itemName);
+        item.setPrice(price);
+        item.setQuantity(quantity);
+
+        itemRepository.save(item);
+        model.addAttribute("item", item);
+
+        return "basic/item";
+    }
+
+    @PostMapping("/add")
+    public String addItemV2(
+            @ModelAttribute("item") Item item, Model model
+    ){
+        itemRepository.save(item);
+//        model.addAttribute("item", item); <- ModelAttribute는 ("xxx")를 addAttribute에 넣어준다.
+
+        return "basic/item";
     }
 
     /**
